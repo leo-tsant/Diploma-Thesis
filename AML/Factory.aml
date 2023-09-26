@@ -1,0 +1,164 @@
+﻿<CAEXFile SchemaVersion="3.0" FileName="Factory.aml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.dke.de/CAEX" xsi:schemaLocation="http://www.dke.de/CAEX CAEX_ClassModel_V.3.0.xsd">
+  <AdditionalInformation DocumentVersions="Recommendations" />
+  <SuperiorStandardVersion>AutomationML 2.10</SuperiorStandardVersion>
+  <SourceDocumentInformation OriginName="AutomationML Editor" OriginID="916578CA-FE0D-474E-A4FC-9E1719892369" OriginVersion="6.1.7.0" LastWritingDateTime="2023-07-31T14:37:43.4981151+03:00" OriginProjectID="unspecified" OriginProjectTitle="unspecified" OriginRelease="6.1.7.0" OriginVendor="AutomationML e.V." OriginVendorURL="www.AutomationML.org" />
+  <InstanceHierarchy Name="Factory">
+    <Version>0</Version>
+    <InternalElement Name="FeederArea" ID="1303b231-77f8-47f4-9682-0be026533701">
+      <InternalElement Name="FeedConveyor" ID="0fd7dc18-a90a-48cf-8221-c8292b90da6f" RefBaseSystemUnitPath="SystemUnitClassLib/ConveyorBelt">
+        <InternalElement Name="Motor" ID="a0ab2673-385e-44bd-b674-48c59931e14a">
+          <ExternalInterface Name="DCMotor" ID="a6f29bfb-b374-42af-82d8-6622ba2e35e8" RefBaseClassPath="InterfaceClassLib/DCMotor" />
+        </InternalElement>
+        <InternalElement Name="StartSensor" ID="37c4a951-f008-4a8e-a48e-bbe38853b79c">
+          <ExternalInterface Name="PhotoSensor" ID="12b7f881-f428-43c3-9934-54536a2fd8a2" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+        <InternalElement Name="EndSensor" ID="d9373f41-542d-48ff-b413-fc5bb773a3fa">
+          <ExternalInterface Name="PhotoSensor" ID="1e564a83-2aa4-4c90-90ac-65dc2b17bcdd" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+      </InternalElement>
+    </InternalElement>
+    <InternalElement Name="ProcessingArea" ID="2d675877-3492-4f6c-ad53-02a3db0a4300">
+      <InternalElement Name="PunchingConveyor" ID="f4921354-cd2c-48fb-97d2-1cfebbe94e9d" RefBaseSystemUnitPath="SystemUnitClassLib/ConveyorBelt">
+        <InternalElement Name="Motor" ID="9917bd06-0244-40df-8f6c-87efd608c4ad">
+          <ExternalInterface Name="DCMotor" ID="85a748b1-8fe5-4ac4-bdcd-70b9c71e73c4" RefBaseClassPath="InterfaceClassLib/DCMotor">
+            <Attribute Name="Test" AttributeDataType="xs:string" Unit="Watt">
+              <DefaultValue>6</DefaultValue>
+              <Value>5</Value>
+            </Attribute>
+          </ExternalInterface>
+        </InternalElement>
+        <InternalElement Name="StartSensor" ID="93d759f2-49e8-4dad-adf0-910b5b20823c">
+          <ExternalInterface Name="PhotoSensor" ID="64f587a4-861b-4f75-8e3a-5b544a10377d" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+        <InternalElement Name="EndSensor" ID="9020b4c3-4bce-4e20-bdf4-a3ce066c8a35">
+          <ExternalInterface Name="PhotoSensor" ID="80bde229-4491-43c9-871a-c61f29dc0269" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+      </InternalElement>
+      <InternalElement Name="HolePuncher" ID="df14dcc6-323d-414c-9528-7e6be675d6e4" RefBaseSystemUnitPath="SystemUnitClassLib/PunchingMachine">
+        <InternalElement Name="Motor" ID="4e9dd973-7482-4402-9287-74b94790edd3">
+          <ExternalInterface Name="DCMotor" ID="88421a1d-53d5-4a5c-bc59-be39dc6fb8d9" RefBaseClassPath="InterfaceClassLib/DCMotor" />
+        </InternalElement>
+        <InternalElement Name="StartSensor" ID="c3374356-f1ac-4130-bfca-3c79d9bf5da2">
+          <ExternalInterface Name="PhotoSensor" ID="a6a7bb1b-f50e-462c-85f4-b2f85c070d65" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+        <InternalElement Name="EndSensor" ID="858f3a0f-cd19-4881-8ad9-bb2822f300d3">
+          <ExternalInterface Name="PhotoSensor" ID="faaba180-9db9-4112-8429-529bd851aabd" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+      </InternalElement>
+      <InternalElement Name="StampPuncher" ID="189c6966-d951-4386-8547-9f0137391e50" RefBaseSystemUnitPath="SystemUnitClassLib/PunchingMachine">
+        <InternalElement Name="Motor" ID="fc4f6448-2cb3-4717-8e65-214f7eb9b66f">
+          <ExternalInterface Name="DCMotor" ID="2533f1f4-9eb5-4d63-8fcc-7161b7867763" RefBaseClassPath="InterfaceClassLib/DCMotor" />
+        </InternalElement>
+        <InternalElement Name="StartSensor" ID="6b6c9388-9330-4aad-86f7-d1efe33d5752">
+          <ExternalInterface Name="PhotoSensor" ID="43e9cc53-cf41-47a3-8014-9cd5512c1c7d" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+        <InternalElement Name="EndSensor" ID="54c83293-ce3b-469f-aa03-9898a11d74b9">
+          <ExternalInterface Name="PhotoSensor" ID="8b9d9a1b-10d3-4dc4-b703-08882ceaf978" RefBaseClassPath="InterfaceClassLib/PhotoSensor" />
+        </InternalElement>
+      </InternalElement>
+    </InternalElement>
+  </InstanceHierarchy>
+  <InterfaceClassLib Name="AutomationMLInterfaceClassLib">
+    <Description>Standard Automation Markup Language Interface Class Library</Description>
+    <Version>2.10.0</Version>
+    <InterfaceClass Name="AutomationMLBaseInterface">
+      <InterfaceClass Name="Order" RefBaseClassPath="AutomationMLBaseInterface">
+        <Attribute Name="Direction" AttributeDataType="xs:string" RefAttributeType="AutomationMLBaseAttributeTypeLib/Direction" />
+      </InterfaceClass>
+      <InterfaceClass Name="Port" RefBaseClassPath="AutomationMLBaseInterface">
+        <Attribute Name="Direction" AttributeDataType="xs:string" RefAttributeType="AutomationMLBaseAttributeTypeLib/Direction">
+          <Constraint Name="AllowedValues">
+            <NominalScaledType>
+              <RequiredValue>In</RequiredValue>
+              <RequiredValue>Out</RequiredValue>
+              <RequiredValue>InOut</RequiredValue>
+            </NominalScaledType>
+          </Constraint>
+        </Attribute>
+        <Attribute Name="Cardinality" RefAttributeType="AutomationMLBaseAttributeTypeLib/Cardinality">
+          <Attribute Name="MinOccur" AttributeDataType="xs:unsignedInt" />
+          <Attribute Name="MaxOccur" AttributeDataType="xs:unsignedInt" />
+        </Attribute>
+        <Attribute Name="Category" AttributeDataType="xs:string" RefAttributeType="AutomationMLBaseAttributeTypeLib/Category" />
+      </InterfaceClass>
+      <InterfaceClass Name="PPRConnector" RefBaseClassPath="AutomationMLBaseInterface" />
+      <InterfaceClass Name="ExternalDataConnector" RefBaseClassPath="AutomationMLBaseInterface">
+        <Attribute Name="refURI" AttributeDataType="xs:anyURI" RefAttributeType="AutomationMLBaseAttributeTypeLib/refURI" />
+        <InterfaceClass Name="COLLADAInterface" RefBaseClassPath="ExternalDataConnector" />
+        <InterfaceClass Name="PLCopenXMLInterface" RefBaseClassPath="ExternalDataConnector" />
+        <InterfaceClass Name="ExternalDataReference" RefBaseClassPath="ExternalDataConnector">
+          <Attribute Name="MIMEType" AttributeDataType="xs:string" RefAttributeType="AutomationMLBaseAttributeTypeLib/MIMEType" />
+        </InterfaceClass>
+      </InterfaceClass>
+      <InterfaceClass Name="Communication" RefBaseClassPath="AutomationMLBaseInterface">
+        <InterfaceClass Name="SignalInterface" RefBaseClassPath="Communication" />
+      </InterfaceClass>
+    </InterfaceClass>
+  </InterfaceClassLib>
+  <InterfaceClassLib Name="InterfaceClassLib">
+    <Version>0</Version>
+    <InterfaceClass Name="DCMotor">
+      <Attribute Name="Test" AttributeDataType="xs:string" Unit="Watt">
+        <DefaultValue>6</DefaultValue>
+        <Value>5</Value>
+      </Attribute>
+    </InterfaceClass>
+    <InterfaceClass Name="PhotoSensor" />
+  </InterfaceClassLib>
+  <RoleClassLib Name="AutomationMLBaseRoleClassLib">
+    <Description>Automation Markup Language base role class library</Description>
+    <Version>2.10.0</Version>
+    <RoleClass Name="AutomationMLBaseRole">
+      <RoleClass Name="Group" RefBaseClassPath="AutomationMLBaseRole">
+        <Attribute Name="AssociatedFacet" AttributeDataType="xs:string" RefAttributeType="AutomationMLBaseAttributeTypeLib/AssociatedFacet" />
+      </RoleClass>
+      <RoleClass Name="Facet" RefBaseClassPath="AutomationMLBaseRole" />
+      <RoleClass Name="Resource" RefBaseClassPath="AutomationMLBaseRole" />
+      <RoleClass Name="Product" RefBaseClassPath="AutomationMLBaseRole" />
+      <RoleClass Name="Process" RefBaseClassPath="AutomationMLBaseRole" />
+      <RoleClass Name="Structure" RefBaseClassPath="AutomationMLBaseRole">
+        <RoleClass Name="ProductStructure" RefBaseClassPath="Structure" />
+        <RoleClass Name="ProcessStructure" RefBaseClassPath="Structure" />
+        <RoleClass Name="ResourceStructure" RefBaseClassPath="Structure" />
+      </RoleClass>
+      <RoleClass Name="ExternalData" RefBaseClassPath="AutomationMLBaseRole" />
+    </RoleClass>
+  </RoleClassLib>
+  <SystemUnitClassLib Name="SystemUnitClassLib">
+    <Version>0</Version>
+    <SystemUnitClass Name="ConveyorBelt" ID="4ba3e75f-af13-4eed-b90c-e4880ee85261">
+      <SupportedRoleClass RefRoleClassPath="" />
+    </SystemUnitClass>
+    <SystemUnitClass Name="PunchingMachine" ID="9bf985ac-799d-4541-a7d2-c219cc1c56b2" />
+  </SystemUnitClassLib>
+  <AttributeTypeLib Name="AutomationMLBaseAttributeTypeLib">
+    <Description>Standard Automation Markup Language Attribute Type Library</Description>
+    <Version>2.10.0</Version>
+    <AttributeType Name="Direction" AttributeDataType="xs:string">
+      <Constraint Name="AllowedValues">
+        <NominalScaledType>
+          <RequiredValue>In</RequiredValue>
+          <RequiredValue>Out</RequiredValue>
+          <RequiredValue>InOut</RequiredValue>
+        </NominalScaledType>
+      </Constraint>
+    </AttributeType>
+    <AttributeType Name="Cardinality">
+      <Attribute Name="MinOccur" AttributeDataType="xs:unsignedInt" />
+      <Attribute Name="MaxOccur" AttributeDataType="xs:unsignedInt" />
+    </AttributeType>
+    <AttributeType Name="Category" AttributeDataType="xs:string" />
+    <AttributeType Name="refURI" AttributeDataType="xs:anyURI" />
+    <AttributeType Name="AssociatedFacet" AttributeDataType="xs:string" />
+    <AttributeType Name="ListType" />
+    <AttributeType Name="OrderedListType" />
+    <AttributeType Name="LocalizedAttribute" AttributeDataType="xs:string" />
+    <AttributeType Name="AssociatedExternalValue">
+      <Attribute Name="refCAEXAttribute" />
+      <Attribute Name="refURI" RefAttributeType="AutomationMLBaseAttributeTypeLib/refURI" />
+      <Attribute Name="Direction" RefAttributeType="AutomationMLBaseAttributeTypeLib/Direction" />
+    </AttributeType>
+    <AttributeType Name="MIMEType" AttributeDataType="xs:string" />
+    <AttributeType Name="DocLang" AttributeDataType="xs:string" />
+  </AttributeTypeLib>
+</CAEXFile>
