@@ -4,22 +4,23 @@ import logging
 import asyncio
 from bleak import BleakScanner, BleakClient
 import requests
+import time
 
 
 THINGSBOARD_HOST = "192.168.41.97"
-ACCESS_TOKEN = "1OM3ve7hghFnANFN4Qo9"
+ACCESS_TOKEN = "IbhmKDuzcEIH2MoOtDj0"
 
 UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 HUB_NAME = "Pybricks Hub"
-distanceSensorURL = "http://localhost:8080/api/v1/nwadhzD6rPrPgTRt59aD/telemetry"
-forceSensorURL = "http://localhost:8080/api/v1/qg6J2dvtuaHHx8HVNJlx/telemetry"
 headers = {"Content-type": "application/json"}
 
-flag = False
-sendFlag = False
+startProgramFlag = False
+stopProgramFlag = False
+keepRunningFlag = False
+interruptedFlag = False
 
 
 def on_connect(client, userdata, flags, rc):
@@ -28,50 +29,40 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("v1/devices/me/attributes/response/+")
     client.publish(
         "v1/devices/me/attributes/request/1",
-        json.dumps({"clientKeys": "SwitchValue"}),
+        json.dumps({"clientKeys": "testSwitch"}),
         1,
     )
 
 
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload)
-    print(data)
-    global switch_value
-    global sendFlag
+    # print(data)
+    # global switch_value
+    global startProgramFlag
+    global stopProgramFlag
+    global keepRunningFlag
+    global interruptedFlag
 
-    if msg.topic == "v1/devices/me/attributes/response/1":
-        if data["client"]["SwitchValue"] == "On":
-            switch_value = "On"
-        else:
-            switch_value = "Off"
-        print("Switch value: ", switch_value)
+    # if msg.topic == "v1/devices/me/attributes/response/1":
+    #     if data["client"]["testSwitch"] == "On":
+    #         switch_value = "On"
+    #     else:
+    #         switch_value = "Off"
+    #     print("testSwitch: ", switch_value)
 
     if msg.topic.startswith("v1/devices/me/rpc/request/"):
-        requestId = msg.topic[len("v1/devices/me/rpc/request/") :]
-        print(requestId)
-        if data["method"] == "getSwitchValue":
-            client.publish(
-                msg.topic.replace("request", "response"),
-                json.dumps({"value": switch_value}),
-                1,
-            )
-            client.publish(
-                "v1/devices/me/attributes/response/1",
-                json.dumps({"SwitchValue": switch_value}),
-                1,
-            )
-        elif data["method"] == "setSwitchValue":
-            if data["params"]:
-                switch_value = "On"
-            else:
-                sendFlag = True
-                switch_value = "Off"
-
+        if data["method"] == "setSwitchValue":
             client.publish(
                 "v1/devices/me/attributes",
-                json.dumps({"SwitchValue": switch_value}),
+                json.dumps({"testSwitch": data["params"]}),
                 1,
             )
+            if data["params"] == True:
+                startProgramFlag = True
+                keepRunningFlag = True
+            else:
+                keepRunningFlag = False
+                interruptedFlag = True
 
 
 def hub_filter(device, ad):
@@ -83,7 +74,10 @@ def handle_disconnect(_):
 
 
 async def main():
-    global sendFlag
+    global startProgramFlag
+    global stopProgramFlag
+    global keepRunningFlag
+    global interruptedFlag
 
     device = await BleakScanner.find_device_by_filter(hub_filter)
     if not device:
@@ -99,23 +93,33 @@ async def main():
         await client.write_gatt_char(rx_char, data)
 
     try:
+        print(f"Connecting to {device.name}...")
         await client_bleak.connect()
         await client_bleak.start_notify(UART_TX_CHAR_UUID, handle_rx)
 
         nus = client_bleak.services.get_service(UART_SERVICE_UUID)
         rx_char = nus.get_characteristic(UART_RX_CHAR_UUID)
 
+        print("Connected successfully.")
+        time.sleep(1)
         print("Start the program on the hub now with the button.")
 
         while True:
             await asyncio.sleep(1)  # Keep the event loop running
             await send(client_bleak, b"0")
             # Break out of the loop when received distance is less than or equal to 100
-            if sendFlag:
+            if startProgramFlag:
+                print("Starting program...")
                 await send(client_bleak, b"1")
-                sendFlag = False
-            if flag:
-                break
+                while keepRunningFlag:
+                    await asyncio.sleep(1)
+                    print("Running...")
+                if interruptedFlag:
+                    await send(client_bleak, b"2")
+                    await asyncio.sleep(1)
+                    interruptedFlag = False
+                startProgramFlag = False
+                print("exited while loop")
 
     except OSError as e:
         if "Operation aborted" in str(e):
@@ -136,7 +140,7 @@ buffer = ""
 
 async def handle_rx(_, data: bytearray):
     global buffer
-    global flag  # Use the global keyword to modify the global variable
+    global keepRunningFlag
 
     buffer += data.decode()
 
@@ -145,30 +149,11 @@ async def handle_rx(_, data: bytearray):
     if buffer.endswith("\n"):
         print(buffer)
 
-        if "Between Distance:" in buffer:
-            distance = int(
-                buffer.split(":")[-1].strip()
-            )  # Keep only the distance value
-
-            dataToSend = {"distance": distance}
-
-            requests.post(
-                distanceSensorURL, data=json.dumps(dataToSend), headers=headers
-            )
-        elif "Force sensor touched:" in buffer:
-            force = float(buffer.split(":")[-1].strip())
-
-            dataToSend = {"force": force}
-
-            requests.post(forceSensorURL, data=json.dumps(dataToSend), headers=headers)
-
-        elif "Counter:" in buffer:
+        if "Counter:" in buffer:
             counter = int(buffer.split(":")[-1].strip())
 
-            if counter == 4:
-                flag = True
-        elif "Shutting down" in buffer:
-            flag = True
+        elif "Done!" in buffer:
+            keepRunningFlag = False
 
         buffer = ""
 

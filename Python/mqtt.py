@@ -1,82 +1,50 @@
-# from tb_device_mqtt import TBDeviceMqttClient, TBPublishInfo
-
-# telemetry = {"force": 44, "enabled": False, "currentFirmwareVersion": "v1.2.2"}
-
-# # 192.168.41.97 is the IP address of WSL instance
-# client = TBDeviceMqttClient("192.168.41.97", 1883, "qg6J2dvtuaHHx8HVNJlx")
-# # Connect to ThingsBoard
-# client.connect()
-# # Sending telemetry without checking the delivery status
-# client.send_telemetry(telemetry)
-# # Sending telemetry and checking the delivery status (QoS = 1 by default)
-# result = client.send_telemetry(telemetry)
-# # get is a blocking call that awaits delivery status
-# success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
-# # Disconnect from ThingsBoard
-# client.disconnect()
-# from time import sleep
-# from tb_device_mqtt import TBDeviceMqttClient
-
-
-# def callback(result, *args):
-#     attribute, value = next(iter(result.items()))
-#     print(f"{attribute} changed to {value}")
-
-
-# client = TBDeviceMqttClient("192.168.41.97", 1883, "qg6J2dvtuaHHx8HVNJlx")
-# client.connect()
-# client.subscribe_to_all_attributes(callback)
-# while True:
-#     sleep(1)
-
 import paho.mqtt.client as mqtt
 import json
-import logging
-from time import sleep
 
-from tb_device_mqtt import TBDeviceMqttClient
-
-logging.basicConfig(level=logging.DEBUG)
-
-# Initialize switch_value
-switch_value = False
-
-
-def callback(result, *args):
-    print(result, *args)
+THINGSBOARD_HOST = "192.168.41.97"
+ACCESS_TOKEN = "IbhmKDuzcEIH2MoOtDj0"
 
 
 def on_connect(client, userdata, flags, rc):
     client.subscribe("v1/devices/me/rpc/request/+")
+    client.subscribe("v1/devices/me/attributes")
+    client.subscribe("v1/devices/me/attributes/response/+")
+    # client.publish(
+    #     "v1/devices/me/attributes",
+    #     json.dumps({"testSwitch": False}),
+    #     1,
+    # )
 
 
 def on_message(client, userdata, msg):
-    global switch_value
     data = json.loads(msg.payload)
-    if data["method"] == "getSwitchValue":
-        print("Get switch value request")
-        print("Current switch value: ", switch_value)
-        client.publish(
-            msg.topic.replace("request", "response"),
-            json.dumps({"value": switch_value}),
-            1,
-        )
-    elif data["method"] == "setSwitchValue":
-        print("Set switch value request")
-        switch_value = data["params"]  # assuming the new value is passed in 'params'
-        print("New switch value: ", switch_value)
+    print(data)
+    # global switch_value
+    global sendFlag
+
+    # if msg.topic == "v1/devices/me/attributes/response/1":
+    #     if data["client"]["testSwitch"] == "On":
+    #         switch_value = "On"
+    #     else:
+    #         switch_value = "Off"
+    #     print("testSwitch: ", switch_value)
+
+    if msg.topic.startswith("v1/devices/me/rpc/request/"):
+        if data["method"] == "setSwitchValue":
+            client.publish(
+                "v1/devices/me/attributes",
+                json.dumps({"testSwitch": data["params"]}),
+                1,
+            )
 
 
-def sub_to_attribute(client):
-    client.subscribe_to_attribute("SwitchValue", callback)
+client_mqtt = mqtt.Client()
+client_mqtt.on_connect = on_connect
+client_mqtt.on_message = on_message
+client_mqtt.username_pw_set(ACCESS_TOKEN)
+client_mqtt.connect(THINGSBOARD_HOST, 1883, 60)
 
-
-client = TBDeviceMqttClient("192.168.41.97", 1883, "qg6J2dvtuaHHx8HVNJlx")
-client.on_connect = on_connect
-client.on_message = on_message
-client.connect()
-sub_to_attribute(client)
-
-
-while True:
-    sleep(1)
+try:
+    client_mqtt.loop_forever()
+except KeyboardInterrupt:
+    client_mqtt.disconnect()
