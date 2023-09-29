@@ -1,171 +1,175 @@
 import paho.mqtt.client as mqtt
 import json
-import logging
 import asyncio
 from bleak import BleakScanner, BleakClient
 import requests
 import time
 
 
-THINGSBOARD_HOST = "192.168.41.97"
-ACCESS_TOKEN = "IbhmKDuzcEIH2MoOtDj0"
-
-UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
-HUB_NAME = "Pybricks Hub"
-headers = {"Content-type": "application/json"}
-
-startProgramFlag = False
-stopProgramFlag = False
-keepRunningFlag = False
-interruptedFlag = False
-
-
-def on_connect(client, userdata, flags, rc):
-    client.subscribe("v1/devices/me/rpc/request/+")
-    client.subscribe("v1/devices/me/attributes")
-    client.subscribe("v1/devices/me/attributes/response/+")
-    client.publish(
-        "v1/devices/me/attributes/request/1",
-        json.dumps({"clientKeys": "testSwitch"}),
-        1,
-    )
-
-
-def on_message(client, userdata, msg):
-    data = json.loads(msg.payload)
-    # print(data)
-    # global switch_value
-    global startProgramFlag
-    global stopProgramFlag
-    global keepRunningFlag
-    global interruptedFlag
-
-    # if msg.topic == "v1/devices/me/attributes/response/1":
-    #     if data["client"]["testSwitch"] == "On":
-    #         switch_value = "On"
-    #     else:
-    #         switch_value = "Off"
-    #     print("testSwitch: ", switch_value)
-
-    if msg.topic.startswith("v1/devices/me/rpc/request/"):
-        if data["method"] == "setSwitchValue":
-            client.publish(
-                "v1/devices/me/attributes",
-                json.dumps({"testSwitch": data["params"]}),
-                1,
-            )
-            if data["params"] == True:
-                startProgramFlag = True
-                keepRunningFlag = True
-            else:
-                keepRunningFlag = False
-                interruptedFlag = True
-
-
-def hub_filter(device, ad):
-    return device.name and device.name.lower() == HUB_NAME.lower()
-
-
-def handle_disconnect(_):
-    print("Hub was disconnected.")
-
-
-async def main():
-    global startProgramFlag
-    global stopProgramFlag
-    global keepRunningFlag
-    global interruptedFlag
-
-    device = await BleakScanner.find_device_by_filter(hub_filter)
-    if not device:
-        print(
-            f"No device found with the name '{HUB_NAME}'. Make sure it's nearby and running the Pybricks code."
+class BallLifterHub:
+    def __init__(self):
+        self.THINGSBOARD_HOST = "192.168.41.97"
+        self.ACCESS_TOKEN = "BpaiwUlHVdQ1BxcUnsJu"
+        self.ballLifterURL = (
+            f"http://localhost:8080/api/v1/{self.ACCESS_TOKEN}/telemetry"
         )
-        return
 
-    client_bleak = BleakClient(device, disconnected_callback=handle_disconnect)
+        self.UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+        self.UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+        self.UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+        self.HUB_NAME = "Pybricks Hub"
 
-    # Shorthand for sending some data to the hub.
-    async def send(client, data):
-        await client.write_gatt_char(rx_char, data)
+        self.headers = {"Content-type": "application/json"}
 
-    try:
-        print(f"Connecting to {device.name}...")
-        await client_bleak.connect()
-        await client_bleak.start_notify(UART_TX_CHAR_UUID, handle_rx)
+        self.startProgramFlag = False
+        self.keepRunningFlag = False
+        self.interruptedFlag = False
+        self.numberOfBalls = 0
+        self.buffer = ""
 
-        nus = client_bleak.services.get_service(UART_SERVICE_UUID)
-        rx_char = nus.get_characteristic(UART_RX_CHAR_UUID)
+        self.client_mqtt = mqtt.Client()
+        self.client_bleak = None
+        self.rx_char = None
 
-        print("Connected successfully.")
-        time.sleep(1)
-        print("Start the program on the hub now with the button.")
+        self.client_mqtt.on_connect = self.on_connect
+        self.client_mqtt.on_message = self.on_message
+        self.client_mqtt.username_pw_set(self.ACCESS_TOKEN)
+        self.client_mqtt.connect(self.THINGSBOARD_HOST, 1883, 60)
 
-        while True:
-            await asyncio.sleep(1)  # Keep the event loop running
-            await send(client_bleak, b"0")
-            # Break out of the loop when received distance is less than or equal to 100
-            if startProgramFlag:
-                print("Starting program...")
-                await send(client_bleak, b"1")
-                while keepRunningFlag:
-                    await asyncio.sleep(1)
-                    print("Running...")
-                if interruptedFlag:
-                    await send(client_bleak, b"2")
-                    await asyncio.sleep(1)
-                    interruptedFlag = False
-                startProgramFlag = False
-                print("exited while loop")
+    def on_connect(self, client, userdata, flags, rc):
+        client.subscribe("v1/devices/me/rpc/request/+")
+        client.subscribe("v1/devices/me/attributes")
 
-    except OSError as e:
-        if "Operation aborted" in str(e):
-            print("Hub shut down.")
-        else:
+    def on_message(self, client, userdata, msg):
+        data = json.loads(msg.payload)
+
+        if msg.topic.startswith("v1/devices/me/rpc/request/"):
+            method = data.get("method", "")
+            params = data.get("params", "")
+
+            if method == "setSwitchValue":
+                client.publish(
+                    "v1/devices/me/attributes", json.dumps({"switch": params}), 1
+                )
+                if params:
+                    self.startProgramFlag = True
+                    self.keepRunningFlag = True
+                else:
+                    self.keepRunningFlag = False
+                    self.interruptedFlag = True
+            elif method == "setNumberOfBallsToFetch":
+                client.publish(
+                    "v1/devices/me/attributes",
+                    json.dumps({"numberOfBallsToFetch": params}),
+                    1,
+                )
+                self.numberOfBalls = params
+
+        elif msg.topic == "v1/devices/me/attributes":
+            sh_switch = data.get("sh_switch", False)
+            if not sh_switch:
+                client.publish(
+                    "v1/devices/me/attributes", json.dumps({"switch": False}), 1
+                )
+                self.keepRunningFlag = False
+                self.interruptedFlag = True
+
+    async def send(self, data):
+        await self.client_bleak.write_gatt_char(self.rx_char, data)
+
+    async def main(self):
+        device = await BleakScanner.find_device_by_filter(
+            lambda d, ad: d.name and d.name.lower() == self.HUB_NAME.lower()
+        )
+
+        if not device:
+            print(
+                f"No device found with the name '{self.HUB_NAME}'. Make sure it's nearby and running the Pybricks code."
+            )
+            return
+
+        self.client_bleak = BleakClient(
+            device, disconnected_callback=self.handle_disconnect
+        )
+
+        try:
+            print(f"Connecting to {device.name}...")
+            await self.client_bleak.connect()
+            await self.client_bleak.start_notify(self.UART_TX_CHAR_UUID, self.handle_rx)
+
+            nus = self.client_bleak.services.get_service(self.UART_SERVICE_UUID)
+            self.rx_char = nus.get_characteristic(self.UART_RX_CHAR_UUID)
+
+            print("Connected successfully.")
+            time.sleep(1)
+            print("Start the program on the hub now with the button.")
+
+            while True:
+                await asyncio.sleep(1)
+                if self.startProgramFlag:
+                    print("Starting program...")
+                    data_to_send = self.numberOfBalls.to_bytes(2, "big")
+                    await self.send(data_to_send)
+                    while self.keepRunningFlag:
+                        await asyncio.sleep(1)
+                        print("Running...")
+                    if self.interruptedFlag:
+                        await asyncio.sleep(1)
+                        await self.send(b"st")
+                        await asyncio.sleep(1)
+                        self.interruptedFlag = False
+                    self.startProgramFlag = False
+                    self.client_mqtt.publish(
+                        "v1/devices/me/attributes", json.dumps({"switch": False}), 1
+                    )
+                    print("exited while loop")
+
+        except OSError as e:
+            if "Operation aborted" in str(e):
+                print("Hub shut down.")
+            else:
+                print(f"Error: {e}")
+        except Exception as e:
             print(f"Error: {e}")
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
+            import traceback
 
-        traceback.print_exc()  # Print the stack trace for debugging
-    finally:
-        await client_bleak.disconnect()
+            traceback.print_exc()
+        finally:
+            await self.client_bleak.disconnect()
+
+    async def handle_rx(self, _, data: bytearray):
+        self.buffer += data.decode()
+
+        if self.buffer.endswith("\n"):
+            print(self.buffer)
+            if "Balls Counter:" in self.buffer:
+                ballsCounter = int(self.buffer.split(":")[-1].strip())
+                dataToSend = {"numberOfBalls": ballsCounter}
+                requests.post(
+                    self.ballLifterURL,
+                    data=json.dumps(dataToSend),
+                    headers=self.headers,
+                )
+            elif "Counter:" in self.buffer:
+                counter = int(self.buffer.split(":")[-1].strip())
+            elif "Hub Button Color:" in self.buffer:
+                color = self.buffer.split(":")[-1].strip()
+                dataToSend = {"hubButtonColor": color}
+                requests.post(
+                    self.ballLifterURL,
+                    data=json.dumps(dataToSend),
+                    headers=self.headers,
+                )
+            elif "Done!" in self.buffer:
+                self.keepRunningFlag = False
+
+            self.buffer = ""
+
+    def handle_disconnect(self, _):
+        print("Hub was disconnected.")
 
 
-buffer = ""
-
-
-async def handle_rx(_, data: bytearray):
-    global buffer
-    global keepRunningFlag
-
-    buffer += data.decode()
-
-    # Check if the message is complete.
-    # A BLE data packet can carry a maximum payload of 20 bytes in BLE v4.0 that's why we use a buffer to store the data until we receive the complete message
-    if buffer.endswith("\n"):
-        print(buffer)
-
-        if "Counter:" in buffer:
-            counter = int(buffer.split(":")[-1].strip())
-
-        elif "Done!" in buffer:
-            keepRunningFlag = False
-
-        buffer = ""
-
-
-client_mqtt = mqtt.Client()
-client_mqtt.on_connect = on_connect
-client_mqtt.on_message = on_message
-client_mqtt.username_pw_set(ACCESS_TOKEN)
-client_mqtt.connect(THINGSBOARD_HOST, 1883, 60)
-
-try:
-    client_mqtt.loop_start()
-    asyncio.run(main())
-except KeyboardInterrupt:
-    client_mqtt.disconnect()
+if __name__ == "__main__":
+    ballLifterHub = BallLifterHub()
+    ballLifterHub.client_mqtt.loop_start()
+    asyncio.run(ballLifterHub.main())
