@@ -3,6 +3,10 @@ import json
 
 url = "http://localhost:8080/api/v1/BpaiwUlHVdQ1BxcUnsJu/telemetry"  # replace "ACCESS_TOKEN" with your device's access token
 headers = {"Content-type": "application/json"}
-data = {"numberOfBalls": "5"}
+data = {
+    "Green": "0",
+    "Blue": "0",
+    "White": "0",
+}
 
 requests.post(url, data=json.dumps(data), headers=headers)
