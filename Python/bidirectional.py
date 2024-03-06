@@ -6,7 +6,6 @@ from contextlib import suppress
 import requests
 import time
 
-
 THINGSBOARD_HOST = "192.168.41.97"
 ACCESS_TOKEN = "BpaiwUlHVdQ1BxcUnsJu"
 ballLifterURL = "http://localhost:8080/api/v1/BpaiwUlHVdQ1BxcUnsJu/telemetry"
@@ -162,9 +161,9 @@ async def handle_rx(_, data: bytearray):
     # A BLE data packet can carry a maximum payload of 20 bytes in BLE v4.0 that's why we use a buffer to store the data until we receive the complete message
     if buffer.endswith("\n"):
         if "@" in buffer:
-            print("".join(buffer.split("@")[1:]))  # Keep only message after @
-        else:
-            print(buffer)
+            "".join(buffer.split("@")[1:])  # Keep only message after @
+        # else:
+        #     print(buffer)
         if "Balls Counter:" in buffer:
             ballsCounter = int(
                 buffer.split(":")[-1].strip()
@@ -191,6 +190,17 @@ async def handle_rx(_, data: bytearray):
         elif "White Counter" in buffer:
             whiteCounter = int(buffer.split(":")[-1].strip())
             dataToSend = {"White": whiteCounter}
+            requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
+        elif "Energy Expenditure" in buffer:
+            clean_energy_str = (
+                buffer.split(":")[-1].strip().replace("\x01", "")
+            )  # Remove \x01
+            energy = float(clean_energy_str)
+            dataToSend = {"energyExpenditure": energy}
+            requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
+        elif "Motor Speed" in buffer:
+            speed = int(buffer.split(":")[-1].strip())
+            dataToSend = {"motorSpeed": speed}
             requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
         elif "Done!" in buffer:
             keepRunningFlag = False
