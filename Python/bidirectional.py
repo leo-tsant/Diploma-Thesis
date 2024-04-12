@@ -5,6 +5,10 @@ from bleak import BleakScanner, BleakClient
 from contextlib import suppress
 import requests
 import time
+import serial
+import re
+import keyboard
+import struct
 
 THINGSBOARD_HOST = "192.168.41.97"
 ACCESS_TOKEN = "BpaiwUlHVdQ1BxcUnsJu"
@@ -20,6 +24,11 @@ stopProgramFlag = False
 keepRunningFlag = False
 interruptedFlag = False
 numberOfBalls = 0
+
+# Establish serial connection
+arduino_port = "COM9"  # Replace with your Arduino's COM port
+baud_rate = 9600
+ser = serial.Serial(arduino_port, baud_rate)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -80,6 +89,8 @@ async def main():
     global client_mqtt
     global numberOfBalls
 
+    sendWeightFlag = False
+
     main_task = asyncio.current_task()
 
     def handle_disconnect(_):
@@ -118,11 +129,30 @@ async def main():
                 await asyncio.sleep(1)  # Keep the event loop running
                 if startProgramFlag:
                     print("Starting program...")
+                    sendWeightFlag = False
                     data_to_send = numberOfBalls.to_bytes(2, "big")
                     await send(data_to_send)
+
                     while keepRunningFlag:
-                        await asyncio.sleep(1)
-                        print("Running...")
+                        ser.reset_input_buffer()  # Flush the Arduino's input buffer
+                        # Get weight value from Arduino
+                        if ser.in_waiting > 0:  # Check if data is available
+                            weight_str = (
+                                ser.readline().decode().strip()
+                            )  # Read, decode, and remove whitespace
+                            try:
+                                weight = float(re.findall(r"\d+\.\d+", weight_str)[0])
+                            except IndexError:
+                                print("Error: Weight format not recognized")
+                                weight = 0.0  # Or a suitable default value
+                            data_to_send_2 = struct.pack("!f", weight)
+                            if not sendWeightFlag:
+                                print(f"Weight: {weight}")
+                            await asyncio.sleep(0.1)
+                            if keyboard.is_pressed("g"):
+                                await send(data_to_send_2)
+                                sendWeightFlag = True
+                                await asyncio.sleep(1)
                     if interruptedFlag:
                         await asyncio.sleep(1)
                         await send(b"st")
@@ -134,7 +164,6 @@ async def main():
                         json.dumps({"switch": False}),
                         1,
                     )
-                    print("exited while loop")
 
         except OSError as e:
             if "Operation aborted" in str(e):
@@ -161,35 +190,18 @@ async def handle_rx(_, data: bytearray):
     # A BLE data packet can carry a maximum payload of 20 bytes in BLE v4.0 that's why we use a buffer to store the data until we receive the complete message
     if buffer.endswith("\n"):
         if "@" in buffer:
-            "".join(buffer.split("@")[1:])  # Keep only message after @
-        # else:
-        #     print(buffer)
+            buffer = buffer.replace("@", "")
+        if "Energy Expenditure" in buffer:
+            pass
+        else:
+            print(buffer)
+
         if "Balls Counter:" in buffer:
             ballsCounter = int(
                 buffer.split(":")[-1].strip()
             )  # Keep only the counter value
 
             dataToSend = {"numberOfBalls": ballsCounter}
-
-            requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
-        elif "Ball Color:" in buffer:
-            data = buffer.split(".")[-1]
-            color = data.replace(
-                "\x01", ""
-            )  # Removes the \x01 character from the string
-            dataToSend = {"ballColor": color}
-            requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
-        elif "Blue Counter" in buffer:
-            blueCounter = int(buffer.split(":")[-1].strip())
-            dataToSend = {"Blue": blueCounter}
-            requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
-        elif "Green Counter" in buffer:
-            greenCounter = int(buffer.split(":")[-1].strip())
-            dataToSend = {"Green": greenCounter}
-            requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
-        elif "White Counter" in buffer:
-            whiteCounter = int(buffer.split(":")[-1].strip())
-            dataToSend = {"White": whiteCounter}
             requests.post(ballLifterURL, data=json.dumps(dataToSend), headers=headers)
         elif "Energy Expenditure" in buffer:
             clean_energy_str = (

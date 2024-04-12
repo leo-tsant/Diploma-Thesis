@@ -7,6 +7,7 @@ from usys import stdin, stdout
 from uselect import poll, select
 from urandom import uniform, choice
 from umath import exp
+from ustruct import unpack
 
 hub = PrimeHub()
 
@@ -21,11 +22,9 @@ epsilon = 0.9
 alpha = 0.1
 gamma = 0.9
 
-# States, Actions, and Rewards
-States = [Color.WHITE, Color.BLUE, Color.GREEN]
+States = []
 
-# Initialize Q-table with all Q-values equal to 0
-qtable = {state: {action: 0 for action in range(50, 1010, 10)} for state in States}
+qtable = {}
 
 
 def setMotorAngleShortestPath(motor, target_angle, speed):
@@ -65,20 +64,25 @@ def setMotorAngleLongestPath(motor, target_angle, speed, waitFlag):
 
 
 # This is a function that waits for a desired color.
-def waitForColor(desired_colors):
-    # While the color is not in the desired colors, we keep waiting.
-    while True:
-        current_color = colorSensor.color()
-        stdout.buffer.write("Energy Expenditure: " + str(50) + "\n")
-        wait(20)
-        stdout.buffer.write("Motor Speed: " + str(0) + "\n")
-        wait(20)
-        if colorSensor.color() == Color.WHITE:
-            return Color.WHITE
+def waitForColor():
+    # # While the color is not in the desired colors, we keep waiting.
+    # while True:
+    #     current_color = colorSensor.color()
+    #     stdout.buffer.write('Energy Expenditure: ' + str(50) + '\n')
+    #     wait(20)
+    #     stdout.buffer.write('Motor Speed: ' + str(0) + '\n')
+    #     wait(20)
+    #     if colorSensor.color() == Color.WHITE:
+    #         return Color.WHITE
 
-        if current_color in desired_colors:
-            wait(20)
-            return current_color
+    #     if current_color in desired_colors:
+    #         wait(20)
+    #         return current_color
+    #     wait(20)
+    while True:
+        if colorSensor.color() != Color.NONE:
+            break
+        stdout.buffer.write("Energy Expenditure: " + str(50) + "\n")
         wait(20)
 
 
@@ -109,6 +113,7 @@ def update_q(state, action, reward, next_state):
         reward + gamma * max(qtable[next_state].values())
     )
     qtable[state][action] = new_q  # update Q-Table with new Q-Value
+    # stdout.buffer.write("Updated Q-value for state " + str(state) + " and action " + str(action) + ": " + str(qtable[state][action]) + '\n')
     # print("Updated Q-value for " + str(action) + ": " + str(qtable[state][action]))
 
 
@@ -135,7 +140,7 @@ def calculate_time_reward(execution_time, max_time=3000):
 
 
 def ballLifterExecution(
-    numOfBallsWanted, numOfBallsRemaining, counter, firstIterationFlag, epsilon
+    numOfBallsWanted, numOfBallsRemaining, counter, firstIterationFlag, epsilon, weight
 ):
 
     keyboard1 = poll()
@@ -143,34 +148,19 @@ def ballLifterExecution(
 
     ballLifterMotorStopWatch = StopWatch()
 
-    blueCounter = 0
-    greenCounter = 0
-    whiteCounter = 0
-
-    colors = [Color.WHITE, Color.BLUE, Color.GREEN]
-
-    stdout.buffer.write("Blue Counter: " + str(blueCounter) + "\n")
-    wait(20)
-    stdout.buffer.write("Green Counter: " + str(greenCounter) + "\n")
-    wait(20)
-    stdout.buffer.write("White Counter: " + str(whiteCounter) + "\n")
-    wait(20)
-
     while not keyboard1.poll(0):
         if firstIterationFlag:
             setLargeMotor(numOfBallsWanted)
             hub.display.number(counter)
             firstIterationFlag = False
 
-        detected_color = waitForColor(colors)
+        waitForColor()
         setMotorAngleShortestPath(ballStopperMotor, 0, 300)
 
-        chosen_action = choose_action(detected_color, epsilon_in=epsilon)
+        chosen_action = choose_action(weight, epsilon_in=epsilon)
 
         moveLargeMotorForInterval(numOfBallsRemaining)
 
-        stdout.buffer.write("Ball Color: " + str(detected_color) + "\n")
-        hub.light.on(detected_color)
         wait(1000)
         if not keyboard1.poll(0):
             start_lift_time = ballLifterMotorStopWatch.time()
@@ -189,7 +179,7 @@ def ballLifterExecution(
 
             total_lift_time = 5000
             while stopwatch.time() - start_time < 3000:  # 3-second timeout
-                if colorSensor.color() == detected_color:
+                if colorSensor.color() != Color.NONE:
                     total_lift_time = ballLifterMotorStopWatch.time() - start_lift_time
                     success = True
                     counter += 1
@@ -198,20 +188,6 @@ def ballLifterExecution(
                     hub.display.number(counter)
                     break
                 wait(20)
-            if counter == numOfBallsWanted:
-                break
-
-            stdout.buffer.write("Balls Counter: " + str(counter) + "\n")
-
-            if detected_color == Color.BLUE:
-                blueCounter += 1
-                stdout.buffer.write("Blue Counter: " + str(blueCounter) + "\n")
-            elif detected_color == Color.GREEN:
-                greenCounter += 1
-                stdout.buffer.write("Green Counter: " + str(greenCounter) + "\n")
-            elif detected_color == Color.WHITE:
-                whiteCounter += 1
-                stdout.buffer.write("White Counter: " + str(whiteCounter) + "\n")
 
             energy_reward = calculate_energy_reward(chosen_action)
             # print("Energy Reward: " + str(energy_reward))
@@ -222,11 +198,16 @@ def ballLifterExecution(
             combined_reward = success_reward * (energy_reward + (2 * time_reward))
             # print("Combined Reward: " + str(combined_reward))
 
-            update_q(detected_color, chosen_action, combined_reward, detected_color)
+            update_q(weight, chosen_action, combined_reward, weight)
 
             # Decrease epsilon for more exploitation in later training phases
             if epsilon > 0.4:
                 epsilon -= 0.01
+            if counter == numOfBallsWanted:
+                stdout.buffer.write("Done!" + "\n")
+                break
+
+            stdout.buffer.write("Balls Counter: " + str(counter) + "\n")
 
     setMotorAngleShortestPath(ballStopperMotor, 310, 200)
 
@@ -234,10 +215,13 @@ def ballLifterExecution(
 while True:
     keyboard2 = poll()
     keyboard2.register(stdin)
+
     pressed = []
     counter = 0
     flag = True
     stdout.buffer.write("Motor Speed: " + str(0) + "\n")
+    wait(10)
+    stdout.buffer.write("Select Mode: " + "\n")
 
     while not any(pressed):
         pressed = hub.buttons.pressed()
@@ -245,6 +229,7 @@ while True:
         hub.light.on(Color.ORANGE)
         stdout.buffer.write("Energy Expenditure: " + str(50) + "\n")
         wait(100)
+
     # Wait for all buttons to be released.
     while any(hub.buttons.pressed()):
         wait(10)
@@ -252,14 +237,18 @@ while True:
         mode = "Training"
         epsilon = 0.9  # Reset epsilon for each training episode
         hub.display.icon(Icon.ARROW_LEFT)
+        stdout.buffer.write("Selected Mode: Training" + "\n")
     elif Button.RIGHT in pressed:
         mode = "Testing"
         epsilon = 0  # Set epsilon to 0 for testing
         hub.display.icon(Icon.ARROW_RIGHT)
+        stdout.buffer.write("Selected Mode: Testing" + "\n")
     else:
         mode = "Waiting"
 
     if mode in ["Training", "Testing"]:
+        stdout.buffer.write("Select Number of Balls" + "\n")
+        wait(20)
         while not keyboard2.poll(0):
             stdout.buffer.write("Energy Expenditure: " + str(50) + "\n")
             wait(100)
@@ -270,5 +259,21 @@ while True:
             and int.from_bytes(inputFromTB, "big") <= 50
         ):
             numberOfBalls = int.from_bytes(inputFromTB, "big")
-            ballLifterExecution(numberOfBalls, numberOfBalls, counter, flag, epsilon)
-            stdout.buffer.write("Done!" + "\n")
+            keyboard3 = poll()
+            keyboard3.register(stdin)
+            stdout.buffer.write("Waiting to get weight of the ball..." + "\n")
+            while not keyboard3.poll(0):
+                hub.light.on(Color.MAGENTA)
+                wait(100)
+            hub.light.on(Color.RED)
+            inputFromArduino = stdin.buffer.read(4)
+            weight = unpack("!f", inputFromArduino)[0]
+            stdout.buffer.write("Weight received: " + str(weight) + "\n")
+
+            # Create a new state if it doesn't exist
+            if weight not in qtable:
+                States.append(weight)
+                qtable[weight] = {action: 0 for action in range(50, 1010, 10)}
+            ballLifterExecution(
+                numberOfBalls, numberOfBalls, counter, flag, epsilon, weight
+            )

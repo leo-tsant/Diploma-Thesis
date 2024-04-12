@@ -1,0 +1,219 @@
+{
+  "SchemaVersion": "3.0",
+  "FileName": "D:\\CEID\\Thesis\\Files\\AML\\test.aml",
+  "schemaLocation": "http://www.dke.de/CAEX CAEX_ClassModel_V.3.0.xsd",
+  "AdditionalInformation": {
+    "DocumentVersions": "Recommendations"
+  },
+  "SuperiorStandardVersion": "AutomationML 2.10",
+  "SourceDocumentInformation": {
+    "OriginName": "AutomationML Editor",
+    "OriginID": "916578CA-FE0D-474E-A4FC-9E1719892369",
+    "OriginVersion": "6.1.7.0",
+    "LastWritingDateTime": "2024-02-20T16:11:24.7802074+02:00",
+    "OriginProjectID": "unspecified",
+    "OriginProjectTitle": "unspecified",
+    "OriginRelease": "6.1.7.0",
+    "OriginVendor": "AutomationML e.V.",
+    "OriginVendorURL": "www.AutomationML.org"
+  },
+  "InstanceHierarchy": {
+    "Name": "BallLifter",
+    "Version": "0",
+    "InternalElement": [
+      {
+        "Name": "Ramp",
+        "ID": "7752b41c-d1c5-4d77-a5ac-24fff0d22b5f",
+        "RefBaseSystemUnitPath": "SystemUnitClassLib/Ramp",
+        "ExternalInterface": {
+          "Name": "ColorSensor",
+          "ID": "803c5742-3325-413c-a277-a315ba5fcf2f",
+          "RefBaseClassPath": "InterfaceClassLib/ColorSensor"
+        }
+      },
+      {
+        "Name": "LiftingArm",
+        "ID": "7b340184-92b8-42b7-a96a-9bbbbb7f9aa4",
+        "RefBaseSystemUnitPath": "SystemUnitClassLib/Arm",
+        "InternalElement": {
+          "Name": "Motor",
+          "ID": "66fb1597-70bc-4e44-b90a-4e751e5b301c",
+          "ExternalInterface": {
+            "Name": "SmallMotor",
+            "ID": "df2da48e-73a6-4902-9e24-6a643cdaa887",
+            "RefBaseClassPath": "InterfaceClassLib/SmallMotor"
+          }
+        }
+      },
+      {
+        "Name": "BallStopper",
+        "ID": "f8550554-f817-4f37-a97b-63803835cbeb",
+        "RefBaseSystemUnitPath": "SystemUnitClassLib/BallStopper",
+        "InternalElement": [
+          {
+            "Name": "Motor",
+            "ID": "de5726d5-1611-4675-88dd-b9cdd99d4c74",
+            "ExternalInterface": {
+              "Name": "SmallMotor",
+              "ID": "d907ea22-e8be-47c7-ac0e-8e81dd51fc2c",
+              "RefBaseClassPath": "InterfaceClassLib/SmallMotor"
+            }
+          },
+          {
+            "Name": "YellowLEGOPiece",
+            "ID": "ec4f55ab-8dd3-4c26-ae3c-826f05e9a992"
+          }
+        ]
+      },
+      {
+        "Name": "Counter",
+        "ID": "f38950ae-1286-4251-bb40-effd67ca924d",
+        "RefBaseSystemUnitPath": "SystemUnitClassLib/CounterMotor",
+        "InternalElement": {
+          "Name": "Motor",
+          "ID": "74427564-8ed8-426f-958f-9472d378a371",
+          "ExternalInterface": {
+            "Name": "LargeMotor",
+            "ID": "2342d43f-5a19-47ca-a619-a283ea567dd3",
+            "RefBaseClassPath": "InterfaceClassLib/LargeMotor"
+          }
+        }
+      },
+      {
+        "Name": "SPIKE",
+        "ID": "1ea7fe5f-99ff-40f3-99eb-829fbb7b1bdd",
+        "RefBaseSystemUnitPath": "SystemUnitClassLib/PrimeHub",
+        "ExternalInterface": [
+          {
+            "Name": "LightMatrix",
+            "ID": "35da3056-f441-4b5b-81c3-e14a615fd69f",
+            "RefBaseClassPath": "InterfaceClassLib/LightMatrix"
+          },
+          {
+            "Name": "HubButton",
+            "ID": "837ff500-51ee-41d3-ab36-d1fc6d623e9e",
+            "RefBaseClassPath": "InterfaceClassLib/HubButton"
+          }
+        ],
+        "InternalElement": {
+          "Name": "Battery",
+          "ID": "70548bd0-25e9-4bd4-9cba-793cc828de69",
+          "ExternalInterface": {
+            "Name": "LargeHubBattery",
+            "ID": "3b2701c3-1c18-4cd8-ab29-5e0399120b09",
+            "RefBaseClassPath": "InterfaceClassLib/LargeHubBattery"
+          }
+        }
+      }
+    ]
+  },
+  "InterfaceClassLib": {
+    "Name": "InterfaceClassLib",
+    "Version": "0",
+    "InterfaceClass": [
+      {
+        "Name": "ColorSensor"
+      },
+      {
+        "Name": "LargeMotor"
+      },
+      {
+        "Name": "SmallMotor"
+      },
+      {
+        "Name": "LargeHubBattery"
+      },
+      {
+        "Name": "LightMatrix"
+      },
+      {
+        "Name": "HubButton"
+      }
+    ]
+  },
+  "SystemUnitClassLib": {
+    "Name": "SystemUnitClassLib",
+    "Version": "0",
+    "SystemUnitClass": [
+      {
+        "Name": "Ramp",
+        "ID": "d99e33d3-b108-411e-be41-25dac17aeef2",
+        "ExternalInterface": {
+          "Name": "ColorSensor",
+          "ID": "c62c5ff2-54a5-42d8-9102-9e321b09d3e0",
+          "RefBaseClassPath": "InterfaceClassLib/ColorSensor"
+        }
+      },
+      {
+        "Name": "Arm",
+        "ID": "3511c520-79a4-4f5e-976a-3559ba6eaa51",
+        "InternalElement": {
+          "Name": "Motor",
+          "ID": "3c7373a1-d5e2-4cac-81e6-846f2d6783a2",
+          "ExternalInterface": {
+            "Name": "SmallMotor",
+            "ID": "e208f86d-eef9-420d-ac7f-cd6dc2b6601a",
+            "RefBaseClassPath": "InterfaceClassLib/SmallMotor"
+          }
+        }
+      },
+      {
+        "Name": "BallStopper",
+        "ID": "732fbdce-c11a-4386-967c-23e1702c8348",
+        "InternalElement": [
+          {
+            "Name": "Motor",
+            "ID": "820a89b9-9113-4f8a-8950-291222cc0dc7",
+            "ExternalInterface": {
+              "Name": "SmallMotor",
+              "ID": "027d3ee7-67b2-478b-a698-936680af22c6",
+              "RefBaseClassPath": "InterfaceClassLib/SmallMotor"
+            }
+          },
+          {
+            "Name": "YellowLEGOPiece",
+            "ID": "cad2e6af-3302-475f-bb5c-66703145bf6e"
+          }
+        ]
+      },
+      {
+        "Name": "CounterMotor",
+        "ID": "ff0b3780-6762-4cdf-8bc1-418c49132602",
+        "InternalElement": {
+          "Name": "Motor",
+          "ID": "fb2dd290-2953-4d0e-b059-d422dcc7d97b",
+          "ExternalInterface": {
+            "Name": "LargeMotor",
+            "ID": "cb0b1c3e-b7ea-494b-97a2-9e08ca72e3e9",
+            "RefBaseClassPath": "InterfaceClassLib/LargeMotor"
+          }
+        }
+      },
+      {
+        "Name": "PrimeHub",
+        "ID": "26f14d95-470a-44bb-8a39-a40e9eafcf9d",
+        "ExternalInterface": [
+          {
+            "Name": "LightMatrix",
+            "ID": "db30e9ec-f381-4c6b-95a0-39396866a2ff",
+            "RefBaseClassPath": "InterfaceClassLib/LightMatrix"
+          },
+          {
+            "Name": "HubButton",
+            "ID": "4bee82df-9a47-4859-8205-0dfc43e8eb98",
+            "RefBaseClassPath": "InterfaceClassLib/HubButton"
+          }
+        ],
+        "InternalElement": {
+          "Name": "Battery",
+          "ID": "6745da84-6393-4d7a-a7be-4ba0d822c209",
+          "ExternalInterface": {
+            "Name": "LargeHubBattery",
+            "ID": "f0059571-0172-4091-863e-d8b1cc055bb9",
+            "RefBaseClassPath": "InterfaceClassLib/LargeHubBattery"
+          }
+        }
+      }
+    ]
+  }
+}
