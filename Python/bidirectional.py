@@ -7,6 +7,7 @@ import requests
 import time
 import serial
 import re
+import operator
 import keyboard
 import struct
 
