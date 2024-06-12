@@ -1,0 +1,102 @@
+﻿<CAEXFile SchemaVersion="3.0" FileName="D:\CEID\Thesis\Files\AML\BallLifter.aml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.dke.de/CAEX" xsi:schemaLocation="http://www.dke.de/CAEX CAEX_ClassModel_V.3.0.xsd">
+  <AdditionalInformation DocumentVersions="Recommendations" />
+  <SuperiorStandardVersion>AutomationML 2.10</SuperiorStandardVersion>
+  <SourceDocumentInformation OriginName="AutomationML Editor" OriginID="916578CA-FE0D-474E-A4FC-9E1719892369" OriginVersion="6.1.7.0" LastWritingDateTime="2024-02-23T00:33:21.4934506+02:00" OriginProjectID="unspecified" OriginProjectTitle="unspecified" OriginRelease="6.1.7.0" OriginVendor="AutomationML e.V." OriginVendorURL="www.AutomationML.org" />
+  <InstanceHierarchy Name="BallLifter">
+    <Version>0</Version>
+    <InternalElement Name="Ramp" ID="e5690880-3104-47f1-8dd0-d18a6947c7a1" RefBaseSystemUnitPath="SystemUnitClassLib/Ramp">
+      <InternalElement Name="Sensor" ID="57b42238-6a03-4e8f-b012-e827e98c82f3">
+        <ExternalInterface Name="ColorSensor" ID="77e8f252-ba2d-4005-98d1-0522970fa36d" RefBaseClassPath="InterfaceClassLib/ColorSensor" />
+      </InternalElement>
+    </InternalElement>
+    <InternalElement Name="LiftingArm" ID="7b340184-92b8-42b7-a96a-9bbbbb7f9aa4" RefBaseSystemUnitPath="SystemUnitClassLib/Arm">
+      <InternalElement Name="BallLifterMotor" ID="66fb1597-70bc-4e44-b90a-4e751e5b301c">
+        <ExternalInterface Name="SmallMotor" ID="df2da48e-73a6-4902-9e24-6a643cdaa887" RefBaseClassPath="InterfaceClassLib/SmallMotor" />
+      </InternalElement>
+    </InternalElement>
+    <InternalElement Name="BallStopper" ID="f8550554-f817-4f37-a97b-63803835cbeb" RefBaseSystemUnitPath="SystemUnitClassLib/BallStopper">
+      <InternalElement Name="BallStopperMotor" ID="de5726d5-1611-4675-88dd-b9cdd99d4c74">
+        <ExternalInterface Name="SmallMotor" ID="d907ea22-e8be-47c7-ac0e-8e81dd51fc2c" RefBaseClassPath="InterfaceClassLib/SmallMotor" />
+      </InternalElement>
+      <InternalElement Name="YellowLEGOPiece" ID="ec4f55ab-8dd3-4c26-ae3c-826f05e9a992" />
+    </InternalElement>
+    <InternalElement Name="Counter" ID="f38950ae-1286-4251-bb40-effd67ca924d" RefBaseSystemUnitPath="SystemUnitClassLib/CounterMotor">
+      <InternalElement Name="CounterMotor" ID="74427564-8ed8-426f-958f-9472d378a371">
+        <ExternalInterface Name="LargeMotor" ID="2342d43f-5a19-47ca-a619-a283ea567dd3" RefBaseClassPath="InterfaceClassLib/LargeMotor" />
+      </InternalElement>
+    </InternalElement>
+    <InternalElement Name="SPIKE" ID="f2f58469-90a1-462f-b606-4ae29e68bf1e" RefBaseSystemUnitPath="SystemUnitClassLib/PrimeHub">
+      <InternalElement Name="HubBattery" ID="76a72130-8475-4a67-a7be-8f4c46bfee7d">
+        <ExternalInterface Name="LargeHubBattery" ID="7200ae7e-0ee8-4940-bec8-4944a2d0ab7c" RefBaseClassPath="InterfaceClassLib/LargeHubBattery" />
+      </InternalElement>
+      <InternalElement Name="HubLightMatrix" ID="474534da-5194-44b1-8de7-c3a4f47a6586">
+        <ExternalInterface Name="LightMatrix" ID="1010ba4c-726e-4243-99d7-c6701945b982" RefBaseClassPath="InterfaceClassLib/LightMatrix" />
+      </InternalElement>
+      <InternalElement Name="HubCenterButton" ID="87ed05c4-8b43-4fc5-bfa9-9914fef84e1c">
+        <ExternalInterface Name="Button" ID="b52577fa-7ab2-4819-aa94-3033ce60908c" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+      <InternalElement Name="HubLeftButton" ID="44a6be7b-1159-4705-a316-ae8d78254eb5">
+        <ExternalInterface Name="Button" ID="44b99189-07a7-4240-991e-2f435a5c500a" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+      <InternalElement Name="HubRightButton" ID="4b12d50f-0787-462f-a102-8a7d8e559c88">
+        <ExternalInterface Name="Button" ID="66cce5a2-c9ce-47c8-9631-6ba913daab64" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+      <InternalElement Name="HubBluetoothButton" ID="d9e030a7-28b6-4d33-abb4-3a9e7ca7a502">
+        <ExternalInterface Name="Button" ID="ebda36de-8cb9-4a6b-aa90-4f7786057b01" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+    </InternalElement>
+  </InstanceHierarchy>
+  <InterfaceClassLib Name="InterfaceClassLib">
+    <Version>0</Version>
+    <InterfaceClass Name="ColorSensor" />
+    <InterfaceClass Name="LargeMotor" />
+    <InterfaceClass Name="SmallMotor" />
+    <InterfaceClass Name="LargeHubBattery" />
+    <InterfaceClass Name="LightMatrix" />
+    <InterfaceClass Name="Button" />
+  </InterfaceClassLib>
+  <SystemUnitClassLib Name="SystemUnitClassLib">
+    <Version>0</Version>
+    <SystemUnitClass Name="Ramp" ID="d99e33d3-b108-411e-be41-25dac17aeef2">
+      <InternalElement Name="Sensor" ID="291124fc-9fce-4385-b862-409a4d25a69d">
+        <ExternalInterface Name="ColorSensor" ID="df848ed8-91d0-4039-a108-848da688d0bd" RefBaseClassPath="InterfaceClassLib/ColorSensor" />
+      </InternalElement>
+    </SystemUnitClass>
+    <SystemUnitClass Name="Arm" ID="3511c520-79a4-4f5e-976a-3559ba6eaa51">
+      <InternalElement Name="Motor" ID="3c7373a1-d5e2-4cac-81e6-846f2d6783a2">
+        <ExternalInterface Name="SmallMotor" ID="e208f86d-eef9-420d-ac7f-cd6dc2b6601a" RefBaseClassPath="InterfaceClassLib/SmallMotor" />
+      </InternalElement>
+    </SystemUnitClass>
+    <SystemUnitClass Name="BallStopper" ID="732fbdce-c11a-4386-967c-23e1702c8348">
+      <InternalElement Name="Motor" ID="820a89b9-9113-4f8a-8950-291222cc0dc7">
+        <ExternalInterface Name="SmallMotor" ID="027d3ee7-67b2-478b-a698-936680af22c6" RefBaseClassPath="InterfaceClassLib/SmallMotor" />
+      </InternalElement>
+      <InternalElement Name="YellowLEGOPiece" ID="cad2e6af-3302-475f-bb5c-66703145bf6e" />
+    </SystemUnitClass>
+    <SystemUnitClass Name="CounterMotor" ID="ff0b3780-6762-4cdf-8bc1-418c49132602">
+      <InternalElement Name="Motor" ID="fb2dd290-2953-4d0e-b059-d422dcc7d97b">
+        <ExternalInterface Name="LargeMotor" ID="cb0b1c3e-b7ea-494b-97a2-9e08ca72e3e9" RefBaseClassPath="InterfaceClassLib/LargeMotor" />
+      </InternalElement>
+    </SystemUnitClass>
+    <SystemUnitClass Name="PrimeHub" ID="26f14d95-470a-44bb-8a39-a40e9eafcf9d">
+      <InternalElement Name="HubBattery" ID="6745da84-6393-4d7a-a7be-4ba0d822c209">
+        <ExternalInterface Name="LargeHubBattery" ID="f0059571-0172-4091-863e-d8b1cc055bb9" RefBaseClassPath="InterfaceClassLib/LargeHubBattery" />
+      </InternalElement>
+      <InternalElement Name="HubLightMatrix" ID="f8b1e8fe-a980-41f9-912b-8a5b3ccde88f">
+        <ExternalInterface Name="LightMatrix" ID="5b922331-1961-4e35-9f10-3789f5d6b797" RefBaseClassPath="InterfaceClassLib/LightMatrix" />
+      </InternalElement>
+      <InternalElement Name="HubCenterButton" ID="73999382-446f-4d6c-beaa-3f2d1418205b">
+        <ExternalInterface Name="Button" ID="341f3dd4-2257-4507-bd7f-f6737f23265c" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+      <InternalElement Name="HubLeftButton" ID="6fc8d9a7-42bc-41ea-9c42-3d7065e28ee9">
+        <ExternalInterface Name="Button" ID="0ccc2bb0-215a-4414-8845-196f07642333" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+      <InternalElement Name="HubRightButton" ID="03dcb9b7-831f-4c73-a22f-fa1702a63f7d">
+        <ExternalInterface Name="Button" ID="06d7b157-723e-4eb7-b5c8-e94249728f97" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+      <InternalElement Name="HubBluetoothButton" ID="7edae061-a2de-407b-965f-827981cad458">
+        <ExternalInterface Name="Button" ID="d0a1929b-773a-4112-b45c-5e431b70b8fc" RefBaseClassPath="InterfaceClassLib/Button" />
+      </InternalElement>
+    </SystemUnitClass>
+  </SystemUnitClassLib>
+</CAEXFile>

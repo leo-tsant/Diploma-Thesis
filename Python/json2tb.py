@@ -29,7 +29,7 @@ def main():
 
             # Create an Asset Profile
             asset_profile = AssetProfile(
-                name="Factory Component", description="General Factory Component"
+                name="BallLifter Component", description="General BallLifter Component"
             )
             asset_profile = rest_client.save_asset_profile(asset_profile)
 
@@ -43,47 +43,64 @@ def main():
             def create_device_or_asset(obj, rest_client):
                 entity = None
                 if "ExternalInterface" in obj:
-                    external_interface = obj["ExternalInterface"]
-                    interface_ref_base_path = external_interface["RefBaseClassPath"]
-                    # Value of RefBaseClassPath is like this: "InterfaceClassLib/DCMotor", so we keep only what's after the /
-                    interface_device_profile = interface_ref_base_path.split("/")[-1]
-                    if interface_device_profile not in unique_device_profiles:
-                        device_profile = DeviceProfile(
-                            name=interface_device_profile,
-                            type="DEFAULT",
-                            transport_type="DEFAULT",
-                            provision_type="ALLOW_CREATE_NEW_DEVICES",
-                            description="Device Profile for "
-                            + interface_device_profile,
-                            profile_data=DeviceProfileData(
-                                configuration={"type": "DEFAULT"},
-                                transport_configuration={"type": "DEFAULT"},
+                    external_interfaces = obj["ExternalInterface"]
+
+                    # Normalize to a list:  Ensure external_interfaces is always a list for iteration
+                    external_interfaces = (
+                        external_interfaces
+                        if isinstance(external_interfaces, list)
+                        else [external_interfaces]
+                    )
+
+                    # Iterate through each ExternalInterface
+                    for ext_interface in external_interfaces:
+                        interface_ref_base_path = ext_interface["RefBaseClassPath"]
+
+                        # Value of RefBaseClassPath is like this: "InterfaceClassLib/DCMotor", so we keep only what's after the /
+                        interface_device_profile = interface_ref_base_path.split("/")[
+                            -1
+                        ]
+                        if interface_device_profile not in unique_device_profiles:
+                            device_profile = DeviceProfile(
+                                name=interface_device_profile,
+                                type="DEFAULT",
+                                transport_type="DEFAULT",
+                                provision_type="ALLOW_CREATE_NEW_DEVICES",
+                                description="Device Profile for "
+                                + interface_device_profile,
+                                profile_data=DeviceProfileData(
+                                    configuration={"type": "DEFAULT"},
+                                    transport_configuration={"type": "DEFAULT"},
+                                ),
+                            )
+                            device_profile = rest_client.save_device_profile(
+                                device_profile
+                            )
+                            # Add the device profile to the unique device profiles
+                            unique_device_profiles[interface_device_profile] = (
+                                device_profile
+                            )
+
+                        device_name = ext_interface["Name"]  # Use interface name
+                        # Increment the count for the current device name, or initialize to 1 if not previously encountered
+                        device_counter[device_name] = (
+                            device_counter.get(device_name, 0) + 1
+                        )
+
+                        entity = Device(
+                            name=f"{device_name}_{device_counter[device_name]}",
+                            type="default",
+                            device_profile_id=unique_device_profiles[
+                                interface_device_profile
+                            ].id,
+                            additional_info=json.dumps(
+                                ext_interface.get("Attribute", "")
                             ),
                         )
-                        device_profile = rest_client.save_device_profile(device_profile)
-                        # Add the device profile to the unique device profiles
-                        unique_device_profiles[
-                            interface_device_profile
-                        ] = device_profile
-
-                    device_name = obj["Name"]
-                    # Increment the count for the current device name, or initialize to 1 if not previously encountered
-                    device_counter[device_name] = device_counter.get(device_name, 0) + 1
-
-                    entity = Device(
-                        name=f"{device_name}_{device_counter[device_name]}",
-                        type="default",
-                        device_profile_id=unique_device_profiles[
-                            interface_device_profile
-                        ].id,
-                        additional_info=json.dumps(
-                            external_interface.get("Attribute", "")
-                        ),
-                    )
-                    entity = rest_client.save_device(entity)
-                    print(
-                        f"Device {entity.name} created and assigned to device profile {unique_device_profiles[interface_device_profile].name}"
-                    )
+                        entity = rest_client.save_device(entity)
+                        print(
+                            f"Device {entity.name} created and assigned to device profile {unique_device_profiles[interface_device_profile].name}"
+                        )
                 else:
                     asset_name = obj["Name"]
                     # Increment the count for the current asset name, or initialize to 1 if not previously encountered
@@ -122,7 +139,7 @@ def main():
                             obj["InternalElement"], rest_client, entity, depth + 1
                         )
 
-            with open("factory.json") as json_file:
+            with open("BallLifter.json") as json_file:
                 data = json.load(json_file)
                 iterate_json(data["InstanceHierarchy"], rest_client)
 
