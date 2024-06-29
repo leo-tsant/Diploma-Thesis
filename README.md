@@ -14,6 +14,8 @@ The robot created is the one shown in the image below:
 
 ![BallLifter](./Screenshots/balllifter.jpg)
 
+Building instructions can be found [here.](www.legostudiovives.be/bouwideeen)
+
 SPIKE was programmed using Pybricks, a Python programming platform for smart LEGO Hubs.
 
 ### Q-Learning
